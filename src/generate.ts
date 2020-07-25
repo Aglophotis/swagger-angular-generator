@@ -37,7 +37,8 @@ export function generate(
 
   try {
     const content = fs.readFileSync(src);
-    schema = JSON.parse(content.toString());
+	
+    schema = JSON.parse(removeEmptyObjectsFromJSONScheme(content.toString()));
   } catch (e) {
     if (e instanceof SyntaxError) {
       out(`${src} is either not a valid JSON scheme or contains non-printable characters`, TermColors.red);
@@ -64,6 +65,31 @@ export function generate(
   const definitions = processDefinitions(schema.definitions, config);
   processPaths(schema.paths, `http://${schema.host}${swaggerUrlPath}${conf.swaggerFile}`,
                config, definitions, schema.basePath);
+}
+
+function removeEmptyObjectsFromJSONScheme(schema: string): string {
+	var regEx = /"\w*?":{"type":"\w*?","title":"\w*?"}/g;
+    var match = regEx.exec(schema);
+	var jsonObjects:string[] = [];
+	var defRefs:string[] = [];
+	
+	while (match !== null) {
+		jsonObjects.push(match[0]);
+		var defName = Object.keys(JSON.parse('{' + match[0] + '}'))[0];
+		defRefs.push(`"$ref":"#/definitions/${defName}"`);
+		match = regEx.exec(schema);
+	}
+	
+	for (var defRef of defRefs) {
+		schema = schema.replace(defRef, '"type":"object"');
+	}
+	for (var jsonObject of jsonObjects) {
+		schema = schema.replace(`,${jsonObject}`, ``);
+		schema = schema.replace(`${jsonObject},`, ``);
+		schema = schema.replace(`${jsonObject}`, ``);
+	}
+	
+	return schema;
 }
 
 function recreateDirectories(dest: string) {
