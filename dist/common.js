@@ -128,10 +128,10 @@ function normalizeDef(type) {
         if (!generic) {
             break;
         }
-        res = generic[1] + res;
+        res = prepareGeneric(generic[1]) + res;
         type = generic[2];
     }
-    res = type + res;
+    res = prepareGeneric(type) + res;
     res = res.trim();
     res = res.replace(/\./g, ' ');
     if (res.match(/ /)) {
@@ -141,6 +141,19 @@ function normalizeDef(type) {
     return res;
 }
 exports.normalizeDef = normalizeDef;
+function prepareGeneric(type) {
+    if (type.includes(',')) {
+        let subTypes = type.split(',');
+        let resType = '';
+        for (let subType of subTypes) {
+            resType += _.upperFirst(subType);
+        }
+        return resType;
+    }
+    else {
+        return type;
+    }
+}
 /**
  * Translates schema type into native/defined type for typescript
  * @param type definition
