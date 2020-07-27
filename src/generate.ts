@@ -68,7 +68,7 @@ export function generate(
 }
 
 function removeEmptyObjectsFromJSONScheme(schema: string): string {
-	var regEx = /"\w*?":{"type":"\w*?","title":"\w*?"}/g;
+	var regEx = /"[«»\w]*?":{"type":"[«»\w]*?","title":"[«»\w]*?"}/g;
     var match = regEx.exec(schema);
 	var jsonObjects:string[] = [];
 	var defRefs:string[] = [];
